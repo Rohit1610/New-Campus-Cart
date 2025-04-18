@@ -1,4 +1,4 @@
-=import React from 'react';
+import React from 'react';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
@@ -38,18 +38,19 @@ export function CartPage() {
               {cartItems.map((item) => (
                 <div key={item._id || item.id} className="flex items-center gap-4 py-4 border-b">
                   <img
-                    src={item.image}
+                    src={item.image || '/path/to/default-image.jpg'} // Fallback image
                     alt={item.name}
                     className="w-24 h-24 object-cover rounded"
                   />
                   <div className="flex-1">
                     <h3 className="text-lg font-semibold text-gray-900">{item.name}</h3>
-                    <p className="text-sm text-gray-500">{item.seller.name}</p>
+                    <p className="text-sm text-gray-500">{item.seller?.name}</p>
                     <div className="mt-2 flex items-center gap-4">
                       <div className="flex items-center">
                         <button
                           onClick={() => updateQuantity(item._id || item.id, Math.max(0, item.quantity - 1))}
                           className="px-2 py-1 border rounded-l"
+                          aria-label={`Decrease quantity of ${item.name}`}
                         >
                           -
                         </button>
@@ -59,6 +60,7 @@ export function CartPage() {
                         <button
                           onClick={() => updateQuantity(item._id || item.id, item.quantity + 1)}
                           className="px-2 py-1 border rounded-r"
+                          aria-label={`Increase quantity of ${item.name}`}
                         >
                           +
                         </button>
@@ -66,6 +68,7 @@ export function CartPage() {
                       <button
                         onClick={() => removeFromCart(item._id || item.id)}
                         className="text-red-500 hover:text-red-700"
+                        aria-label={`Remove ${item.name} from cart`}
                       >
                         <Trash2 className="h-5 w-5" />
                       </button>

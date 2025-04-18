@@ -1,7 +1,7 @@
+// src/pages/SellItemPage.tsx
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
-import type { Product } from '../types';
 
 export function SellItemPage() {
   const navigate = useNavigate();
@@ -15,56 +15,76 @@ export function SellItemPage() {
     quantity: '',
     image: ''
   });
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
+    setErrorMessage(''); // Reset any previous error message
+
+    // Basic Validation
+    if (parseFloat(formData.price) <= 0 || parseInt(formData.quantity) <= 0) {
+      setErrorMessage('Price and quantity must be positive values.');
+      setLoading(false);
+      return;
+    }
 
     try {
-      // In a real app, this would be an API call to save the product
-      const newProduct: Product = {
-        id: Math.random().toString(36).substr(2, 9),
+      const productToSend = {
         name: formData.name,
         description: formData.description,
         price: parseFloat(formData.price),
-        category: formData.category as Product['category'],
-        condition: formData.condition as Product['condition'],
+        category: formData.category,
+        condition: formData.condition,
         quantity: parseInt(formData.quantity),
         image: formData.image,
         seller: {
           id: 'seller-1',
           name: 'Current User',
           type: 'student'
-        },
-        createdAt: new Date(),
-        reviews: [],
-        averageRating: 0
+        }
       };
 
-      // For demo purposes, we'll just log the product
-      console.log('New product:', newProduct);
+      const res = await fetch('http://localhost:3000/api/products', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(productToSend),
+      });
+
+      if (!res.ok) {
+        throw new Error('Failed to add product');
+      }
+
       alert('Product listed successfully!');
       navigate('/');
     } catch (error) {
       console.error('Error listing product:', error);
-      alert('Failed to list product. Please try again.');
+      setErrorMessage('Failed to list product. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>
+  ) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
     <div className="min-h-screen bg-gray-50">
       <Navbar searchQuery="" onSearch={() => {}} />
-      
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-2xl font-bold text-gray-900 mb-8">Sell an Item</h1>
-        
+
+      <main className="max-w-3xl mx-auto px-4 py-8">
+        <h1 className="text-2xl font-bold mb-8">Sell an Item</h1>
+        {errorMessage && (
+          <div className="mb-4 p-4 bg-red-100 text-red-600 rounded-md">
+            {errorMessage}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="bg-white rounded-lg shadow p-6 space-y-6">
           <div>
             <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">

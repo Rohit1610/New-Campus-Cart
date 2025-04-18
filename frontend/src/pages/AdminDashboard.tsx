@@ -7,7 +7,7 @@ export function AdminDashboard() {
   useEffect(() => {
     const fetchUsers = async () => {
       try {
-        const res = await fetch('http://localhost:5000/api/users');
+        const res = await fetch('http://localhost:3000/api/users'); // Updated port
         const data = await res.json();
         setUsers(data);
       } catch (err) {
@@ -20,7 +20,7 @@ export function AdminDashboard() {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Navbar searchQuery="" onSearch={() => {}} />
+      <Navbar searchQuery="" onSearch={() => { }} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-8">Admin Dashboard</h1>

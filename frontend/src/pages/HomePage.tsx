@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import { Navbar } from '../components/Navbar';
 import { ProductCard } from '../components/ProductCard';
 import type { Product } from '../types';
@@ -10,17 +10,25 @@ export function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSellerType, setSelectedSellerType] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const { addToCart } = useCart();
   const { isDarkMode } = useDarkMode();
+
+  // Debounce search input
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         const res = await fetch('http://localhost:5000/api/products');
+        if (!res.ok) throw new Error('Failed to fetch products');
         const data = await res.json();
         setProducts(data);
       } catch (error) {
-        console.error('Error fetching products:', error);
+        setError('Error fetching products. Please try again later.');
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -29,6 +37,16 @@ export function HomePage() {
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
+
+    // Clear previous timeout
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    // Set new timeout to debounce the search input
+    searchTimeoutRef.current = setTimeout(() => {
+      // Trigger the filtering logic
+    }, 300); // Adjust the debounce delay as needed
   };
 
   const handleAddToCart = (product: Product) => {
@@ -49,8 +67,9 @@ export function HomePage() {
   };
 
   const filteredProducts = products.filter(product => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         product.description.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch =
+      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      product.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
     const matchesSellerType = !selectedSellerType || product.seller?.type === selectedSellerType;
 
@@ -59,7 +78,7 @@ export function HomePage() {
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <Navbar 
+      <Navbar
         onSearch={handleSearch}
         searchQuery={searchQuery}
       />
@@ -70,12 +89,11 @@ export function HomePage() {
             Campus Marketplace
           </h1>
           <div className="flex gap-4">
-            <select 
-              className={`px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                isDarkMode 
-                  ? 'bg-gray-700 border-gray-600 text-white' 
+            <select
+              className={`px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode
+                  ? 'bg-gray-700 border-gray-600 text-white'
                   : 'border-gray-300 text-gray-900'
-              }`}
+                }`}
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -86,12 +104,11 @@ export function HomePage() {
               <option value="electronics">Electronics</option>
               <option value="other">Other</option>
             </select>
-            <select 
-              className={`px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                isDarkMode 
-                  ? 'bg-gray-700 border-gray-600 text-white' 
+            <select
+              className={`px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode
+                  ? 'bg-gray-700 border-gray-600 text-white'
                   : 'border-gray-300 text-gray-900'
-              }`}
+                }`}
               value={selectedSellerType}
               onChange={(e) => setSelectedSellerType(e.target.value)}
             >
@@ -102,7 +119,20 @@ export function HomePage() {
           </div>
         </div>
 
-        {filteredProducts.length === 0 ? (
+        {/* Loading and Error Handling */}
+        {isLoading && (
+          <div className="text-center py-12">
+            <p className="text-lg text-gray-500">Loading products...</p>
+          </div>
+        )}
+        {error && !isLoading && (
+          <div className="text-center py-12">
+            <p className="text-lg text-red-500">{error}</p>
+          </div>
+        )}
+
+        {/* Displaying filtered products */}
+        {!isLoading && !error && filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>
               No products found matching your criteria.
