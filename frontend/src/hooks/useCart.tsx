@@ -1,59 +1,54 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import { create } from 'zustand';
+import { persist } from 'zustand/middleware';
 import type { Product, CartItem } from '../types';
 
-interface CartContextType {
+interface CartState {
   cartItems: CartItem[];
   addToCart: (product: Product) => void;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
 }
 
-const CartContext = createContext<CartContextType | undefined>(undefined);
+export const useCart = create<CartState>()(
+  persist(
+    (set, get) => ({
+      cartItems: [],
 
-export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
+      addToCart: (product: Product) => {
+        const { cartItems } = get();
+        const existingItem = cartItems.find(item => item.id === product.id);
 
-  const addToCart = useCallback((product: Product) => {
-    setCartItems(prevItems => {
-      const existingItem = prevItems.find(item => item.id === product.id);
-      if (existingItem) {
-        return prevItems.map(item =>
-          item.id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        );
-      }
-      return [...prevItems, { ...product, quantity: 1 }];
-    });
-  }, []);
+        if (existingItem) {
+          set({
+            cartItems: cartItems.map(item =>
+              item.id === product.id
+                ? { ...item, quantity: item.quantity + 1 }
+                : item
+            ),
+          });
+        } else {
+          set({ cartItems: [...cartItems, { ...product, quantity: 1 }] });
+        }
+      },
 
-  const removeFromCart = useCallback((productId: string) => {
-    setCartItems(prevItems => prevItems.filter(item => item.id !== productId));
-  }, []);
+      removeFromCart: (productId: string) => {
+        set({
+          cartItems: get().cartItems.filter(item => item.id !== productId),
+        });
+      },
 
-  const updateQuantity = useCallback((productId: string, quantity: number) => {
-    setCartItems(prevItems =>
-      quantity === 0
-        ? prevItems.filter(item => item.id !== productId)
-        : prevItems.map(item =>
-            item.id === productId
-              ? { ...item, quantity }
-              : item
-          )
-    );
-  }, []);
-
-  return (
-    <CartContext.Provider value={{ cartItems, addToCart, removeFromCart, updateQuantity }}>
-      {children}
-    </CartContext.Provider>
-  );
-}
-
-export function useCart() {
-  const context = useContext(CartContext);
-  if (context === undefined) {
-    throw new Error('useCart must be used within a CartProvider');
-  }
-  return context;
-}
+      updateQuantity: (productId: string, quantity: number) => {
+        const updatedItems =
+          quantity === 0
+            ? get().cartItems.filter(item => item.id !== productId)
+            : get().cartItems.map(item =>
+              item.id === productId ? { ...item, quantity } : item
+            );
+        set({ cartItems: updatedItems });
+      },
+    }),
+    {
+      name: 'cart-storage', // localStorage key
+    }
+  )
+);

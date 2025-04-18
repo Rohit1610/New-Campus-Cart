@@ -15,7 +15,6 @@ export function HomePage() {
   const { addToCart } = useCart();
   const { isDarkMode } = useDarkMode();
 
-  // Debounce search input
   const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -35,18 +34,17 @@ export function HomePage() {
     fetchProducts();
   }, []);
 
+  // Search debouncing
   const handleSearch = (query: string) => {
     setSearchQuery(query);
 
-    // Clear previous timeout
     if (searchTimeoutRef.current) {
       clearTimeout(searchTimeoutRef.current);
     }
 
-    // Set new timeout to debounce the search input
     searchTimeoutRef.current = setTimeout(() => {
-      // Trigger the filtering logic
-    }, 300); // Adjust the debounce delay as needed
+      // Perform any additional search logic here if necessary
+    }, 300);
   };
 
   const handleAddToCart = (product: Product) => {
@@ -55,11 +53,9 @@ export function HomePage() {
       return;
     }
 
-    setProducts(prevProducts =>
-      prevProducts.map(p =>
-        p._id === product._id
-          ? { ...p, quantity: p.quantity - 1 }
-          : p
+    setProducts(prev =>
+      prev.map(p =>
+        p._id === product._id ? { ...p, quantity: p.quantity - 1 } : p
       )
     );
 
@@ -78,10 +74,7 @@ export function HomePage() {
 
   return (
     <div className={`min-h-screen ${isDarkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <Navbar
-        onSearch={handleSearch}
-        searchQuery={searchQuery}
-      />
+      <Navbar onSearch={handleSearch} searchQuery={searchQuery} />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
@@ -90,10 +83,7 @@ export function HomePage() {
           </h1>
           <div className="flex gap-4">
             <select
-              className={`px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode
-                  ? 'bg-gray-700 border-gray-600 text-white'
-                  : 'border-gray-300 text-gray-900'
-                }`}
+              className={`px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 text-gray-900'}`}
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
             >
@@ -105,10 +95,7 @@ export function HomePage() {
               <option value="other">Other</option>
             </select>
             <select
-              className={`px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode
-                  ? 'bg-gray-700 border-gray-600 text-white'
-                  : 'border-gray-300 text-gray-900'
-                }`}
+              className={`px-4 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-blue-500 ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 text-gray-900'}`}
               value={selectedSellerType}
               onChange={(e) => setSelectedSellerType(e.target.value)}
             >
@@ -119,7 +106,6 @@ export function HomePage() {
           </div>
         </div>
 
-        {/* Loading and Error Handling */}
         {isLoading && (
           <div className="text-center py-12">
             <p className="text-lg text-gray-500">Loading products...</p>
@@ -131,7 +117,6 @@ export function HomePage() {
           </div>
         )}
 
-        {/* Displaying filtered products */}
         {!isLoading && !error && filteredProducts.length === 0 ? (
           <div className="text-center py-12">
             <p className={`text-lg ${isDarkMode ? 'text-gray-300' : 'text-gray-500'}`}>

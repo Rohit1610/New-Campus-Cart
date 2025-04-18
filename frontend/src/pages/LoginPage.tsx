@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
 import { Navbar } from '../components/Navbar';
 import { useDarkMode } from '../hooks/useDarkMode';
+
 export function LoginPage() {
   const navigate = useNavigate();
   const { login, error, loading } = useAuth();
@@ -16,7 +17,7 @@ export function LoginPage() {
     if (!email || !password) {
       alert('Please fill in both email and password.');
       return;
-    }8
+    }
     await login(email, password, role);
     if (!error) {
       navigate('/');
@@ -38,7 +39,9 @@ export function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label htmlFor="email" className={`block text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>Email</label>
+              <label htmlFor="email" className={`block text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                Email
+              </label>
               <input
                 type="email"
                 id="email"
@@ -53,7 +56,9 @@ export function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="password" className={`block text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>Password</label>
+              <label htmlFor="password" className={`block text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                Password
+              </label>
               <input
                 type="password"
                 id="password"
@@ -68,7 +73,9 @@ export function LoginPage() {
             </div>
 
             <div>
-              <label htmlFor="role" className={`block text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>Role</label>
+              <label htmlFor="role" className={`block text-sm font-medium ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>
+                Role
+              </label>
               <select
                 id="role"
                 value={role}
@@ -87,6 +94,7 @@ export function LoginPage() {
             <button
               type="submit"
               className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              disabled={loading}
             >
               {loading ? 'Logging in...' : 'Login'}
             </button>

@@ -16,7 +16,7 @@ exports.signup = async (req, res) => {
 
   const hashed = await bcrypt.hash(password, 10);
   const user = new User({ email, password: hashed, role });
-  
+
   try {
     await user.save();
     res.status(201).json({ message: "User created successfully" });
@@ -41,7 +41,7 @@ exports.login = async (req, res) => {
   const token = jwt.sign(
     { userId: user._id, role: user.role },
     process.env.JWT_SECRET,
-    { expiresIn: '1h' } // You can adjust the expiry time as needed
+    { expiresIn: "1h" } // You can adjust the expiry time as needed
   );
 
   res.json({ token, role: user.role });
