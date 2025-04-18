@@ -1,4 +1,4 @@
-import React from 'react';
+=import React from 'react';
 import { Trash2, ArrowLeft } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useCart } from '../hooks/useCart';
@@ -36,7 +36,7 @@ export function CartPage() {
           <div className="bg-white rounded-lg shadow">
             <div className="p-6 space-y-4">
               {cartItems.map((item) => (
-                <div key={item.id} className="flex items-center gap-4 py-4 border-b">
+                <div key={item._id || item.id} className="flex items-center gap-4 py-4 border-b">
                   <img
                     src={item.image}
                     alt={item.name}
@@ -48,7 +48,7 @@ export function CartPage() {
                     <div className="mt-2 flex items-center gap-4">
                       <div className="flex items-center">
                         <button
-                          onClick={() => updateQuantity(item.id, Math.max(0, item.quantity - 1))}
+                          onClick={() => updateQuantity(item._id || item.id, Math.max(0, item.quantity - 1))}
                           className="px-2 py-1 border rounded-l"
                         >
                           -
@@ -57,14 +57,14 @@ export function CartPage() {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                          onClick={() => updateQuantity(item._id || item.id, item.quantity + 1)}
                           className="px-2 py-1 border rounded-r"
                         >
                           +
                         </button>
                       </div>
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeFromCart(item._id || item.id)}
                         className="text-red-500 hover:text-red-700"
                       >
                         <Trash2 className="h-5 w-5" />

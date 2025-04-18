@@ -1,92 +1,31 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navbar } from '../components/Navbar';
 import { ProductCard } from '../components/ProductCard';
-import type { Product, CartItem } from '../types';
+import type { Product } from '../types';
 import { useCart } from '../hooks/useCart';
 import { useDarkMode } from '../hooks/useDarkMode';
 
-const INITIAL_PRODUCTS: Product[] = [
-  {
-    id: '1',
-    name: 'Computer Science Society Hoodie',
-    description: 'Comfortable cotton hoodie with CS Society logo. Limited edition design.',
-    price: 35.99,
-    image: 'https://images.unsplash.com/photo-1556821840-3a63f95609a7?auto=format&fit=crop&w=800',
-    seller: {
-      name: 'Computer Science Society',
-      type: 'society',
-      id: 'css-001'
-    },
-    category: 'clothing',
-    condition: 'new',
-    createdAt: new Date(),
-    quantity: 50,
-    reviews: [],
-    averageRating: 0
-  },
-  {
-    id: '2',
-    name: 'Data Structures Textbook',
-    description: 'Slightly used textbook for CS202. Perfect condition, no highlights.',
-    price: 45.00,
-    image: 'https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&w=800',
-    seller: {
-      name: 'Jane Smith',
-      type: 'student',
-      id: 'student-123'
-    },
-    category: 'books',
-    condition: 'like-new',
-    createdAt: new Date(),
-    quantity: 1,
-    reviews: [],
-    averageRating: 0
-  },
-  {
-    id: '3',
-    name: 'iPhone 13 Pro',
-    description: 'Used iPhone 13 Pro 128GB, great condition, includes charger and original box.',
-    price: 699.99,
-    image: 'https://images.unsplash.com/photo-1632661674596-df3210908b84?auto=format&fit=crop&w=800',
-    seller: {
-      name: 'Mike Johnson',
-      type: 'student',
-      id: 'student-456'
-    },
-    category: 'phones',
-    condition: 'good',
-    createdAt: new Date(),
-    quantity: 1,
-    reviews: [],
-    averageRating: 0
-  },
-  {
-    id: '4',
-    name: 'Samsung Galaxy S22',
-    description: 'Brand new Samsung Galaxy S22, won in a competition, sealed in box.',
-    price: 799.99,
-    image: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?auto=format&fit=crop&w=800',
-    seller: {
-      name: 'Tech Society',
-      type: 'society',
-      id: 'tech-001'
-    },
-    category: 'phones',
-    condition: 'new',
-    createdAt: new Date(),
-    quantity: 2,
-    reviews: [],
-    averageRating: 0
-  }
-];
-
 export function HomePage() {
-  const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState<Product[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('');
   const [selectedSellerType, setSelectedSellerType] = useState('');
   const { addToCart } = useCart();
   const { isDarkMode } = useDarkMode();
+
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await fetch('http://localhost:5000/api/products');
+        const data = await res.json();
+        setProducts(data);
+      } catch (error) {
+        console.error('Error fetching products:', error);
+      }
+    };
+
+    fetchProducts();
+  }, []);
 
   const handleSearch = (query: string) => {
     setSearchQuery(query);
@@ -100,7 +39,7 @@ export function HomePage() {
 
     setProducts(prevProducts =>
       prevProducts.map(p =>
-        p.id === product.id
+        p._id === product._id
           ? { ...p, quantity: p.quantity - 1 }
           : p
       )
@@ -113,8 +52,8 @@ export function HomePage() {
     const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesCategory = !selectedCategory || product.category === selectedCategory;
-    const matchesSellerType = !selectedSellerType || product.seller.type === selectedSellerType;
-    
+    const matchesSellerType = !selectedSellerType || product.seller?.type === selectedSellerType;
+
     return matchesSearch && matchesCategory && matchesSellerType;
   });
 
@@ -124,7 +63,7 @@ export function HomePage() {
         onSearch={handleSearch}
         searchQuery={searchQuery}
       />
-      
+
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className={`text-2xl font-bold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
@@ -173,7 +112,7 @@ export function HomePage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map(product => (
               <ProductCard
-                key={product.id}
+                key={product._id || product.id}
                 product={product}
                 onAddToCart={handleAddToCart}
               />
